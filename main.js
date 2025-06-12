@@ -26,7 +26,7 @@ process.stdin.on('data', (data) => {
 console.clear();
 console.log(`
 ╔══════════════════════════════════════════════╗
-║      🔥 ARV - Advanced Real Visitors 🔥     ║
+║      🔥 ARV - Advanced Real Visitors 🔥       ║
 ║   Smart Traffic Simulation & Real Campaign   ║
 ║          By : Akashirohman and team          ║
 ╚══════════════════════════════════════════════╝
