@@ -25,11 +25,9 @@ process.stdin.on('data', (data) => {
 
 console.clear();
 console.log(`
-╔══════════════════════════════════════════════╗
-║       🔥 ARV - Advanced Real Visitors🔥       ║
-║   Smart Traffic Simulation & Real Campaign   ║
-║          By : Akashirohman and team          ║
-╚══════════════════════════════════════════════╝
+🔥 ARV - Advanced Real Visitors🔥
+Smart Traffic Simulation & Real Campaign
+By : Akashirohman and team
 `);
 
 const command = readline.question('Ketik "start" untuk mulai download & test proxy: ');
