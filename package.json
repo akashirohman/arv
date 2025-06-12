@@ -1,0 +1,14 @@
+{
+  "name": "arv",
+  "version": "1.0.0",
+  "description": "Advanced Real Visitors - Traffic simulator with proxy & keyword",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "dependencies": {
+    "puppeteer-extra": "^3.3.4",
+    "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "readline-sync": "^1.4.10"
+  }
+}
