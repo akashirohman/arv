@@ -2,10 +2,7 @@
 const fs = require('fs');
 const os = require('os');
 const readline = require('readline-sync');
-const { findWorkingProxies } = require('./proxyManager');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
+const { chromium } = require('playwright');
 
 let stats = { sent: 0, success: 0, failed: 0 };
 let stopRequested = false;
@@ -25,14 +22,16 @@ process.stdin.on('data', (data) => {
 
 console.clear();
 console.log(`
-🔥 ARV - Advanced Real Visitors🔥
-Smart Traffic Simulation & Real Campaign
-By : Akashirohman and team
+╔══════════════════════════════════════════════╗
+║      🔥 ARV - Advanced Real Visitors 🔥     ║
+║   Smart Traffic Simulation & Real Campaign   ║
+║          By : Akashirohman and team          ║
+╚══════════════════════════════════════════════╝
 `);
 
 const command = readline.question('Ketik "start" untuk mulai download & test proxy: ');
 if (command.trim().toLowerCase() === 'start') {
-  findWorkingProxies().then(() => main());
+  require('./proxyManager').findWorkingProxies().then(() => main());
 } else {
   console.log('❌ Perintah tidak dikenali. Keluar.');
   process.exit();
@@ -49,7 +48,7 @@ async function main() {
   console.log(`\n🚀 Menjalankan simulasi dengan ${proxies.length} proxy...`);
   console.log('💡 Ketik "stop" lalu ENTER untuk menghentikan bot.\n');
 
-  for (let i = 0; i < proxies.length; ) {
+  for (let i = 0; i < proxies.length;) {
     if (stopRequested) break;
 
     const usage = await getCPUUsage();
@@ -69,29 +68,36 @@ async function simulateVisit(targetUrl, keyword, proxy) {
   printStats();
   const [host, port] = proxy.split(':');
   try {
-    const browser = await puppeteer.launch({
+    const browser = await chromium.launch({
       headless: true,
-      args: [`--proxy-server=http://${host}:${port}`]
+      proxy: { server: `http://${host}:${port}` }
     });
-    const page = await browser.newPage();
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
     await page.goto('https://www.google.com/', { waitUntil: 'domcontentloaded', timeout: 10000 });
-    await page.type('input[name=q]', keyword);
+    await page.fill('input[name=q]', keyword);
     await page.keyboard.press('Enter');
     await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
-    const links = await page.$x(`//a[contains(@href, '${targetUrl.replace('https://', '').replace('http://', '')}')]`);
-    if (links.length > 0) {
-      await links[0].click();
-      await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(5000);
-      await page.evaluate(() => window.scrollBy(0, 500));
-      await page.waitForTimeout(5000);
-      stats.success++;
-    } else {
-      stats.failed++;
+    const links = await page.$$('a');
+    let clicked = false;
+    for (const link of links) {
+      const href = await link.getAttribute('href');
+      if (href && href.includes(targetUrl.replace('https://', '').replace('http://', ''))) {
+        await link.click();
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(5000);
+        await page.mouse.wheel({ deltaY: 500 });
+        await page.waitForTimeout(5000);
+        stats.success++;
+        clicked = true;
+        break;
+      }
     }
 
+    if (!clicked) stats.failed++;
     await browser.close();
   } catch (err) {
     stats.failed++;
